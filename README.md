@@ -302,14 +302,8 @@ Si tuviera más tiempo para mejorar el proyecto, implementaría:
 Agregar una funcionalidad de búsqueda completa que permita a los usuarios encontrar series rápidamente:
 - **Barra de búsqueda** en la navegación superior con debouncing para evitar queries excesivas
 - **Búsqueda full-text** en PostgreSQL usando `to_tsvector` y `to_tsquery` para buscar en títulos y sinopsis
-- **Filtros avanzados** por categoría, año, o duración de episodios
 - **Historial de búsquedas** guardado localmente con AsyncStorage
 - **Sugerencias automáticas** mientras el usuario escribe
-
-```tsx
-// Ejemplo de implementación
-const { results, loading } = useSearch(searchQuery);
-```
 
 ### 2. **Internacionalización (i18n) Multi-idioma**
 Implementar soporte para múltiples idiomas usando **react-i18next**:
@@ -329,17 +323,6 @@ Integrar **Expo Notifications** para alertar a usuarios sobre contenido nuevo:
 - **Deep linking** para que al tocar la notificación, abra directamente la pantalla de detalles de la serie
 - **Backend con Firebase Cloud Messaging** o Supabase Edge Functions para enviar notificaciones programadas
 
-```tsx
-// Ejemplo de configuración
-await Notifications.scheduleNotificationAsync({
-  content: {
-    title: "Nuevo episodio disponible",
-    body: `${show.title} - Episodio ${episode.number}`,
-  },
-  trigger: { date: episodeReleaseDate },
-});
-```
-
 ### 4. **Unit Testing con Jest y React Native Testing Library**
 Agregar tests para garantizar calidad y prevenir regressiones:
 - **Componentes:** Verificar rendering correcto de `ShowCard`, `EpisodeItem`, `CategoryRow`
@@ -347,29 +330,12 @@ Agregar tests para garantizar calidad y prevenir regressiones:
 - **Services:** Validar operaciones CRUD de `supabase.service.ts`
 - **Cobertura objetivo: 80%** en toda la aplicación
 
-```bash
-npm install --save-dev jest @testing-library/react-native
-npm test
-```
-
 ### 5. **Animación Compartida (Shared Element Transition)**
 Implementar transiciones suaves al navegar de `ShowCard` a `ShowDetailScreen`:
 - **Animar el poster** desde el carrusel hasta el backdrop de detalle
 - Usar **react-native-reanimated** o `@react-navigation/native-stack` con `sharedElementTransition`
 - **Animaciones de fade** para los detalles de la serie
 - Mejorar UX haciendo la navegación más fluida y moderna, similar a la app oficial de Netflix
-
-### 6. **Modo Offline con WatermelonDB**
-Agregar soporte offline para mejorar experiencia sin conexión:
-- **WatermelonDB** como capa de caché local sincronizable con Supabase
-- Cachear series, categorías y episodios descargados
-- **Sincronización bi-direccional** cuando vuelve la conexión
-- Permitir navegar por contenido ya visto sin internet
-
-**Beneficios:**
-- Experiencia más robusta en redes lentas o intermitentes
-- Menor latencia al cargar pantallas ya visitadas
-- Uso reducido de datos móviles
 
 ---
 

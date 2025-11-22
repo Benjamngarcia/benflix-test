@@ -10,11 +10,12 @@ import { useCategoriesWithShows } from '@/hooks/use-data';
 import type { CategoryWithShows, Show } from '@/types/database.types';
 import type { HomeScreenProps } from '@/types/navigation.types';
 import { Ionicons } from '@expo/vector-icons';
-import React, { useCallback, useMemo } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   FlatList,
   ListRenderItem,
+  Modal,
   RefreshControl,
   StyleSheet,
   Text,
@@ -26,6 +27,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 export default function HomeScreen({ navigation }: HomeScreenProps) {
   const { session } = useAuth();
   const { categories, loading, error, refresh } = useCategoriesWithShows();
+  const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
+  const [modalVisible, setModalVisible] = useState(false);
 
   const handleShowPress = useCallback(
     (show: Show) => {
@@ -41,6 +44,26 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
   const handleLogin = useCallback(() => {
     navigation.navigate('Login');
   }, [navigation]);
+
+  const handleCategorySelect = useCallback((categoryId: string | null) => {
+    setSelectedCategoryId(categoryId);
+    setModalVisible(false);
+  }, []);
+
+  const filteredCategories = useMemo(() => {
+    if (!selectedCategoryId) {
+      return categories;
+    }
+    return categories.filter((category) => category.id === selectedCategoryId);
+  }, [categories, selectedCategoryId]);
+
+  const selectedCategoryName = useMemo(() => {
+    if (!selectedCategoryId) {
+      return 'All Categories';
+    }
+    const category = categories.find((cat) => cat.id === selectedCategoryId);
+    return category?.name || 'All Categories';
+  }, [selectedCategoryId, categories]);
 
   const keyExtractor = useCallback((item: CategoryWithShows) => item.id, []);
 
@@ -108,8 +131,20 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
         )}
       </View>
 
+      {/* Category Filter Chip */}
+      <View style={styles.filterContainer}>
+        <TouchableOpacity
+          style={styles.filterChip}
+          onPress={() => setModalVisible(true)}
+          activeOpacity={0.7}
+        >
+          <Text style={styles.filterChipText}>{selectedCategoryName}</Text>
+          <Ionicons name="chevron-down" size={16} color="#fff" />
+        </TouchableOpacity>
+      </View>
+
       <FlatList
-        data={categories}
+        data={filteredCategories}
         renderItem={renderItem}
         keyExtractor={keyExtractor}
         showsVerticalScrollIndicator={false}
@@ -122,13 +157,69 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
             colors={['#e50914']}
           />
         }
-        // Performance optimizations
         removeClippedSubviews={true}
         maxToRenderPerBatch={3}
         updateCellsBatchingPeriod={50}
         initialNumToRender={2}
         windowSize={5}
       />
+
+      {/* Category Filter Modal */}
+      <Modal
+        visible={modalVisible}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setModalVisible(false)}
+      >
+        <TouchableOpacity
+          style={styles.modalOverlay}
+          activeOpacity={1}
+          onPress={() => setModalVisible(false)}
+        >
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Select Category</Text>
+
+            {/* All Categories Option */}
+            <TouchableOpacity
+              style={[
+                styles.categoryChip,
+                !selectedCategoryId && styles.categoryChipSelected,
+              ]}
+              onPress={() => handleCategorySelect(null)}
+            >
+              <Text
+                style={[
+                  styles.categoryChipText,
+                  !selectedCategoryId && styles.categoryChipTextSelected,
+                ]}
+              >
+                All Categories
+              </Text>
+            </TouchableOpacity>
+
+            {/* Individual Categories */}
+            {categories.map((category) => (
+              <TouchableOpacity
+                key={category.id}
+                style={[
+                  styles.categoryChip,
+                  selectedCategoryId === category.id && styles.categoryChipSelected,
+                ]}
+                onPress={() => handleCategorySelect(category.id)}
+              >
+                <Text
+                  style={[
+                    styles.categoryChipText,
+                    selectedCategoryId === category.id && styles.categoryChipTextSelected,
+                  ]}
+                >
+                  {category.name}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </TouchableOpacity>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -218,5 +309,72 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#999',
     textAlign: 'center',
+  },
+  filterContainer: {
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#1a1a1a',
+  },
+  filterChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    alignSelf: 'flex-start',
+    gap: 8,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    backgroundColor: '#1a1a1a',
+    borderWidth: 1,
+    borderColor: '#333',
+  },
+  filterChipText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.85)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 24,
+  },
+  modalContent: {
+    width: '100%',
+    maxWidth: 400,
+    backgroundColor: '#1a1a1a',
+    borderRadius: 12,
+    padding: 24,
+    maxHeight: '80%',
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#fff',
+    marginBottom: 20,
+    textAlign: 'center',
+  },
+  categoryChip: {
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderRadius: 20,
+    backgroundColor: '#2a2a2a',
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: '#333',
+  },
+  categoryChipSelected: {
+    backgroundColor: '#e50914',
+    borderColor: '#e50914',
+  },
+  categoryChipText: {
+    color: '#fff',
+    fontSize: 15,
+    fontWeight: '500',
+    textAlign: 'center',
+  },
+  categoryChipTextSelected: {
+    fontWeight: '700',
   },
 });
