@@ -4,6 +4,18 @@ Aplicación móvil estilo Netflix construida con React Native, TypeScript y Supa
 
 ---
 
+## 🎥 Video Demo
+
+<div>
+    <a href="https://www.loom.com/share/d184a24af7db4864a5a152a939a17ca3">
+    </a>
+    <a href="https://www.loom.com/share/d184a24af7db4864a5a152a939a17ca3">
+      <img style="max-width:300px;" src="https://cdn.loom.com/sessions/thumbnails/d184a24af7db4864a5a152a939a17ca3-650dfe703bf3d8bc-full-play.gif#t=0.1">
+    </a>
+  </div>
+
+---
+
 ## 📱 Cómo correr el proyecto
 
 ### Requisitos previos
